@@ -472,22 +472,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Function to escape HTML attributes to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   // Function to create share buttons HTML
   function createShareButtons(name, details) {
     const formattedSchedule = formatSchedule(details);
     const shareText = `Check out ${name} at Mergington High School! ${details.description} - ${formattedSchedule}`;
     const shareUrl = window.location.href;
     
+    // Escape all user-provided data for use in HTML attributes
+    const escapedName = escapeHtml(name);
+    const escapedShareText = escapeHtml(shareText);
+    const escapedShareUrl = escapeHtml(shareUrl);
+    
     return `
       <div class="share-buttons">
         <span class="share-label">Share:</span>
-        <button class="share-button share-twitter" data-activity="${name}" data-text="${shareText}" data-url="${shareUrl}" title="Share on Twitter">
+        <button class="share-button share-twitter" data-activity="${escapedName}" data-text="${escapedShareText}" data-url="${escapedShareUrl}" title="Share on Twitter">
           <span class="share-icon">🐦</span>
         </button>
-        <button class="share-button share-facebook" data-activity="${name}" data-url="${shareUrl}" title="Share on Facebook">
+        <button class="share-button share-facebook" data-activity="${escapedName}" data-url="${escapedShareUrl}" title="Share on Facebook">
           <span class="share-icon">📘</span>
         </button>
-        <button class="share-button share-email" data-activity="${name}" data-text="${shareText}" title="Share via Email">
+        <button class="share-button share-email" data-activity="${escapedName}" data-text="${escapedShareText}" title="Share via Email">
           <span class="share-icon">✉️</span>
         </button>
       </div>
