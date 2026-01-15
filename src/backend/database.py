@@ -54,7 +54,7 @@ initial_activities = {
         },
         "max_participants": 20,
         "participants": ["emma@mergington.edu", "sophia@mergington.edu"],
-        "difficulty": "Beginner"
+        "difficulty": "Intermediate"
     },
     "Morning Fitness": {
         "description": "Early morning physical training and exercises",
@@ -121,7 +121,7 @@ initial_activities = {
         },
         "max_participants": 10,
         "participants": ["james@mergington.edu", "benjamin@mergington.edu"],
-        "difficulty": "Intermediate"
+        "difficulty": "Advanced"
     },
     "Debate Team": {
         "description": "Develop public speaking and argumentation skills",
@@ -169,7 +169,7 @@ initial_activities = {
         },
         "max_participants": 16,
         "participants": ["william@mergington.edu", "jacob@mergington.edu"],
-        "difficulty": "Advanced"
+        "difficulty": "Intermediate"
     },
     "Manga Maniacs": {
         "description": "Dive into epic adventures and unforgettable characters! From shonen battles to slice-of-life stories, discover the captivating world of Japanese manga. Discuss your favorite series, share recommendations, and connect with fellow otaku!",

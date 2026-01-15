@@ -26,6 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
 
+  // Dark mode elements
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+  const darkModeIcon = document.getElementById("dark-mode-icon");
+
   // Activity categories with corresponding colors
   const activityTypes = {
     sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32" },
@@ -59,6 +63,31 @@ document.addEventListener("DOMContentLoaded", () => {
     afternoon: { start: "15:00", end: "18:00" }, // After school hours
     weekend: { days: ["Saturday", "Sunday"] }, // Weekend days
   };
+
+  // Dark mode functionality
+  function initializeDarkMode() {
+    const darkMode = localStorage.getItem("darkMode");
+    if (darkMode === "enabled") {
+      document.body.classList.add("dark-mode");
+      darkModeIcon.textContent = "☀️";
+    }
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    const isDarkMode = document.body.classList.contains("dark-mode");
+    
+    if (isDarkMode) {
+      localStorage.setItem("darkMode", "enabled");
+      darkModeIcon.textContent = "☀️";
+    } else {
+      localStorage.setItem("darkMode", "disabled");
+      darkModeIcon.textContent = "🌙";
+    }
+  }
+
+  // Event listener for dark mode toggle
+  darkModeToggle.addEventListener("click", toggleDarkMode);
 
   // Initialize filters from active elements
   function initializeFilters() {
@@ -508,6 +537,60 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Function to escape HTML attributes to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Function to create share buttons HTML
+  function createShareButtons(name, details) {
+    const formattedSchedule = formatSchedule(details);
+    const shareText = `Check out ${name} at Mergington High School! ${details.description} - ${formattedSchedule}`;
+    const shareUrl = window.location.href;
+    
+    // Escape all user-provided data for use in HTML attributes
+    const escapedName = escapeHtml(name);
+    const escapedShareText = escapeHtml(shareText);
+    const escapedShareUrl = escapeHtml(shareUrl);
+    
+    return `
+      <div class="share-buttons">
+        <span class="share-label">Share:</span>
+        <button class="share-button share-twitter" data-activity="${escapedName}" data-text="${escapedShareText}" data-url="${escapedShareUrl}" title="Share on Twitter">
+          <span class="share-icon">🐦</span>
+        </button>
+        <button class="share-button share-facebook" data-activity="${escapedName}" data-url="${escapedShareUrl}" title="Share on Facebook">
+          <span class="share-icon">📘</span>
+        </button>
+        <button class="share-button share-email" data-activity="${escapedName}" data-text="${escapedShareText}" title="Share via Email">
+          <span class="share-icon">✉️</span>
+        </button>
+      </div>
+    `;
+  }
+
+  // Function to handle Twitter share
+  function shareOnTwitter(text, url) {
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
+  }
+
+  // Function to handle Facebook share
+  function shareOnFacebook(url) {
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(facebookUrl, '_blank', 'width=550,height=420');
+  }
+
+  // Function to handle Email share
+  function shareViaEmail(activityName, text) {
+    const subject = `Check out ${activityName} at Mergington High School`;
+    const body = text;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  }
+
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
@@ -543,15 +626,11 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     // Create difficulty badge if difficulty is specified
-    let difficultyBadge = "";
-    if (details.difficulty) {
-      const difficultyInfo = difficultyColors[details.difficulty];
-      difficultyBadge = `
-        <span class="difficulty-badge" style="background-color: ${difficultyInfo.color}; color: ${difficultyInfo.textColor}">
-          ${details.difficulty}
-        </span>
-      `;
-    }
+    const difficultyBadge = details.difficulty ? `
+      <span class="difficulty-badge difficulty-${details.difficulty.toLowerCase()}">
+        ${details.difficulty}
+      </span>
+    ` : '';
 
     // Create capacity indicator
     const capacityIndicator = `
@@ -566,6 +645,9 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    // Create share buttons
+    const shareButtonsHtml = createShareButtons(name, details);
+
     activityCard.innerHTML = `
       ${tagHtml}
       ${difficultyBadge}
@@ -576,6 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      ${shareButtonsHtml}
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -623,6 +706,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
+    });
+
+    // Add click handlers for share buttons
+    const shareTwitterBtn = activityCard.querySelector(".share-twitter");
+    const shareFacebookBtn = activityCard.querySelector(".share-facebook");
+    const shareEmailBtn = activityCard.querySelector(".share-email");
+
+    shareTwitterBtn.addEventListener("click", (e) => {
+      const text = e.currentTarget.dataset.text;
+      const url = e.currentTarget.dataset.url;
+      shareOnTwitter(text, url);
+    });
+
+    shareFacebookBtn.addEventListener("click", (e) => {
+      const url = e.currentTarget.dataset.url;
+      shareOnFacebook(url);
+    });
+
+    shareEmailBtn.addEventListener("click", (e) => {
+      const activityName = e.currentTarget.dataset.activity;
+      const text = e.currentTarget.dataset.text;
+      shareViaEmail(activityName, text);
     });
 
     // Add click handler for register button (only when authenticated)
@@ -923,6 +1028,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initialize app
+  initializeDarkMode();
   checkAuthentication();
   initializeFilters();
   fetchActivities();
