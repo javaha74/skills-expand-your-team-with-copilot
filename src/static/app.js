@@ -39,6 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
     technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
   };
 
+  // Difficulty level colors
+  const difficultyColors = {
+    Beginner: { color: "#e8f5e9", textColor: "#2e7d32" },
+    Intermediate: { color: "#fff3e0", textColor: "#e65100" },
+    Advanced: { color: "#ffebee", textColor: "#c62828" },
+  };
+
   // State for activities and filters
   let allActivities = {};
   let currentFilter = "all";
@@ -126,6 +133,22 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update active class
     timeFilters.forEach((btn) => {
       if (btn.dataset.time === timeRange) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    fetchActivities();
+  }
+
+  // Function to set difficulty filter
+  function setDifficultyFilter(difficulty) {
+    currentDifficulty = difficulty;
+
+    // Update active class
+    difficultyFilters.forEach((btn) => {
+      if (btn.dataset.difficulty === difficulty) {
         btn.classList.add("active");
       } else {
         btn.classList.remove("active");
